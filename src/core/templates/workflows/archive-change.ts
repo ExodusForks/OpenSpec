@@ -25,9 +25,20 @@ export function getArchiveChangeSkillTemplate(): SkillTemplate {
 
    **IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
 
-2. **Check artifact completion status**
+2. **Detect if this is an umbrella change**
 
-   Run \`openspec status --change "<name>" --json\` to check artifact completion.
+   \`\`\`bash
+   cat openspec/changes/<name>/links.yaml 2>/dev/null
+   \`\`\`
+
+   - If \`links.yaml\` exists: jump to **Umbrella Archive Flow** below.
+   - If not found: proceed with standard single-scope flow.
+
+   For single-scope: if no workspace.yaml, run openspec from current dir. If workspace.yaml exists, read it and determine which scope owns this change, then run openspec as \`(cd <scope.path> && openspec ...)\`.
+
+3. **Check artifact completion status**
+
+   Run \`(cd <workspace> && openspec status --change "<name>" --json)\` to check artifact completion.
 
    Parse the JSON to understand:
    - \`schemaName\`: The workflow being used
@@ -38,7 +49,7 @@ export function getArchiveChangeSkillTemplate(): SkillTemplate {
    - Use **AskUserQuestion tool** to confirm user wants to proceed
    - Proceed if user confirms
 
-3. **Check task completion status**
+4. **Check task completion status**
 
    Read the tasks file (typically \`tasks.md\`) to check for incomplete tasks.
 
@@ -51,9 +62,9 @@ export function getArchiveChangeSkillTemplate(): SkillTemplate {
 
    **If no tasks file exists:** Proceed without task-related warning.
 
-4. **Assess delta spec sync state**
+5. **Assess delta spec sync state**
 
-   Check for delta specs at \`openspec/changes/<name>/specs/\`. If none exist, proceed without sync prompt.
+   Check for delta specs at \`<workspace>/openspec/changes/<name>/specs/\`. If none exist, proceed without sync prompt.
 
    **If delta specs exist:**
    - Compare each delta spec with its corresponding main spec at \`openspec/specs/<capability>/spec.md\`
@@ -66,7 +77,7 @@ export function getArchiveChangeSkillTemplate(): SkillTemplate {
 
    If user chooses sync, use Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke openspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Proceed to archive regardless of choice.
 
-5. **Perform the archive**
+6. **Perform the archive**
 
    Create the archive directory if it doesn't exist:
    \`\`\`bash
@@ -83,7 +94,7 @@ export function getArchiveChangeSkillTemplate(): SkillTemplate {
    mv openspec/changes/<name> openspec/changes/archive/YYYY-MM-DD-<name>
    \`\`\`
 
-6. **Display summary**
+7. **Display summary**
 
    Show archive completion summary including:
    - Change name
@@ -91,6 +102,24 @@ export function getArchiveChangeSkillTemplate(): SkillTemplate {
    - Archive location
    - Whether specs were synced (if applicable)
    - Note about any warnings (incomplete artifacts/tasks)
+
+## Umbrella Archive Flow *(cross-scope changes only)*
+
+1. Read links.yaml to get list of scopes.
+
+2. For each scope: follow steps 3-7 (artifact check, task check, delta sync, archive, commit) using that scope's path. Complete one scope fully before starting the next.
+
+3. Archive umbrella directory:
+   \`\`\`bash
+   mv openspec/changes/<name> openspec/changes/archive/YYYY-MM-DD-<name>
+   \`\`\`
+
+4. Commit:
+   \`\`\`bash
+   git add openspec/changes/ && git commit -m "chore(openspec): archive <name> umbrella"
+   \`\`\`
+
+5. Show completion summary with per-scope archive status.
 
 **Output On Success**
 
@@ -112,7 +141,8 @@ All artifacts complete. All tasks complete.
 - Preserve .openspec.yaml when moving to archive (it moves with the directory)
 - Show clear summary of what happened
 - If sync is requested, use openspec-sync-specs approach (agent-driven)
-- If delta specs exist, always run the sync assessment and show the combined summary before prompting`,
+- If delta specs exist, always run the sync assessment and show the combined summary before prompting
+- For umbrella changes, complete one scope fully before starting the next`,
     license: 'MIT',
     compatibility: 'Requires openspec CLI.',
     metadata: { author: 'openspec', version: '1.0' },
@@ -140,9 +170,20 @@ export function getOpsxArchiveCommandTemplate(): CommandTemplate {
 
    **IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
 
-2. **Check artifact completion status**
+2. **Detect if this is an umbrella change**
 
-   Run \`openspec status --change "<name>" --json\` to check artifact completion.
+   \`\`\`bash
+   cat openspec/changes/<name>/links.yaml 2>/dev/null
+   \`\`\`
+
+   - If \`links.yaml\` exists: jump to **Umbrella Archive Flow** below.
+   - If not found: proceed with standard single-scope flow.
+
+   For single-scope: if no workspace.yaml, run openspec from current dir. If workspace.yaml exists, read it and determine which scope owns this change, then run openspec as \`(cd <scope.path> && openspec ...)\`.
+
+3. **Check artifact completion status**
+
+   Run \`(cd <workspace> && openspec status --change "<name>" --json)\` to check artifact completion.
 
    Parse the JSON to understand:
    - \`schemaName\`: The workflow being used
@@ -153,7 +194,7 @@ export function getOpsxArchiveCommandTemplate(): CommandTemplate {
    - Prompt user for confirmation to continue
    - Proceed if user confirms
 
-3. **Check task completion status**
+4. **Check task completion status**
 
    Read the tasks file (typically \`tasks.md\`) to check for incomplete tasks.
 
@@ -166,9 +207,9 @@ export function getOpsxArchiveCommandTemplate(): CommandTemplate {
 
    **If no tasks file exists:** Proceed without task-related warning.
 
-4. **Assess delta spec sync state**
+5. **Assess delta spec sync state**
 
-   Check for delta specs at \`openspec/changes/<name>/specs/\`. If none exist, proceed without sync prompt.
+   Check for delta specs at \`<workspace>/openspec/changes/<name>/specs/\`. If none exist, proceed without sync prompt.
 
    **If delta specs exist:**
    - Compare each delta spec with its corresponding main spec at \`openspec/specs/<capability>/spec.md\`
@@ -181,7 +222,7 @@ export function getOpsxArchiveCommandTemplate(): CommandTemplate {
 
    If user chooses sync, use Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke openspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Proceed to archive regardless of choice.
 
-5. **Perform the archive**
+6. **Perform the archive**
 
    Create the archive directory if it doesn't exist:
    \`\`\`bash
@@ -198,7 +239,7 @@ export function getOpsxArchiveCommandTemplate(): CommandTemplate {
    mv openspec/changes/<name> openspec/changes/archive/YYYY-MM-DD-<name>
    \`\`\`
 
-6. **Display summary**
+7. **Display summary**
 
    Show archive completion summary including:
    - Change name
@@ -206,6 +247,24 @@ export function getOpsxArchiveCommandTemplate(): CommandTemplate {
    - Archive location
    - Spec sync status (synced / sync skipped / no delta specs)
    - Note about any warnings (incomplete artifacts/tasks)
+
+## Umbrella Archive Flow *(cross-scope changes only)*
+
+1. Read links.yaml to get list of scopes.
+
+2. For each scope: follow steps 3-7 (artifact check, task check, delta sync, archive, commit) using that scope's path. Complete one scope fully before starting the next.
+
+3. Archive umbrella directory:
+   \`\`\`bash
+   mv openspec/changes/<name> openspec/changes/archive/YYYY-MM-DD-<name>
+   \`\`\`
+
+4. Commit:
+   \`\`\`bash
+   git add openspec/changes/ && git commit -m "chore(openspec): archive <name> umbrella"
+   \`\`\`
+
+5. Show completion summary with per-scope archive status.
 
 **Output On Success**
 
@@ -274,6 +333,7 @@ Target archive directory already exists.
 - Preserve .openspec.yaml when moving to archive (it moves with the directory)
 - Show clear summary of what happened
 - If sync is requested, use the Skill tool to invoke \`openspec-sync-specs\` (agent-driven)
-- If delta specs exist, always run the sync assessment and show the combined summary before prompting`
+- If delta specs exist, always run the sync assessment and show the combined summary before prompting
+- For umbrella changes, complete one scope fully before starting the next`
   };
 }

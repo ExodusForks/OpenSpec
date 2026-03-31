@@ -25,18 +25,29 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
 
    Always announce: "Using change: <name>" and how to override (e.g., \`/opsx:apply <other>\`).
 
-2. **Check status to understand the schema**
+2. **Detect if this is an umbrella change**
+
    \`\`\`bash
-   openspec status --change "<name>" --json
+   cat openspec/changes/<name>/links.yaml 2>/dev/null
+   \`\`\`
+
+   - If \`links.yaml\` exists: jump to **Umbrella Apply Flow** below.
+   - If not found: proceed with standard single-scope flow.
+
+   For single-scope: if no workspace.yaml, run openspec from current dir. If workspace.yaml exists, read it and determine which scope owns this change, then run openspec as \`(cd <scope.path> && openspec ...)\`.
+
+3. **Check status to understand the schema**
+   \`\`\`bash
+   (cd <workspace> && openspec status --change "<name>" --json)
    \`\`\`
    Parse the JSON to understand:
    - \`schemaName\`: The workflow being used (e.g., "spec-driven")
    - Which artifact contains the tasks (typically "tasks" for spec-driven, check status for others)
 
-3. **Get apply instructions**
+4. **Get apply instructions**
 
    \`\`\`bash
-   openspec instructions apply --change "<name>" --json
+   (cd <workspace> && openspec instructions apply --change "<name>" --json)
    \`\`\`
 
    This returns:
@@ -50,14 +61,14 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
    - If \`state: "all_done"\`: congratulate, suggest archive
    - Otherwise: proceed to implementation
 
-4. **Read context files**
+5. **Read context files**
 
    Read the files listed in \`contextFiles\` from the apply instructions output.
    The files depend on the schema being used:
    - **spec-driven**: proposal, specs, design, tasks
    - Other schemas: follow the contextFiles from CLI output
 
-5. **Show current progress**
+6. **Show current progress**
 
    Display:
    - Schema being used
@@ -65,7 +76,7 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
    - Remaining tasks overview
    - Dynamic instruction from CLI
 
-6. **Implement tasks (loop until done or blocked)**
+7. **Implement tasks (loop until done or blocked)**
 
    For each pending task:
    - Show which task is being worked on
@@ -80,13 +91,28 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
    - Error or blocker encountered → report and wait for guidance
    - User interrupts
 
-7. **On completion or pause, show status**
+8. **On completion or pause, show status**
 
    Display:
    - Tasks completed this session
    - Overall progress: "N/M tasks complete"
    - If all done: suggest archive
    - If paused: explain why and wait for guidance
+
+## Umbrella Apply Flow *(cross-scope changes only)*
+
+1. Read umbrella context:
+   \`\`\`bash
+   cat openspec/changes/<name>/proposal.md
+   cat openspec/changes/<name>/links.yaml
+   \`\`\`
+
+2. For each scope in links.yaml:
+   - Announce: "Applying <name> in scope: <scope.name>"
+   - Follow steps 3-8 of standard flow using that scope's path
+   - Complete all tasks for one scope before moving to next
+
+3. Show umbrella completion summary with per-scope progress.
 
 **Output During Implementation**
 
@@ -147,6 +173,7 @@ What would you like to do?
 - Keep code changes minimal and scoped to each task
 - Update task checkbox immediately after completing each task
 - Pause on errors, blockers, or unclear requirements - don't guess
+- For umbrella changes, complete one scope fully before starting the next
 - Use contextFiles from CLI output, don't assume specific file names
 
 **Fluid Workflow Integration**
@@ -182,18 +209,29 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
 
    Always announce: "Using change: <name>" and how to override (e.g., \`/opsx:apply <other>\`).
 
-2. **Check status to understand the schema**
+2. **Detect if this is an umbrella change**
+
    \`\`\`bash
-   openspec status --change "<name>" --json
+   cat openspec/changes/<name>/links.yaml 2>/dev/null
+   \`\`\`
+
+   - If \`links.yaml\` exists: jump to **Umbrella Apply Flow** below.
+   - If not found: proceed with standard single-scope flow.
+
+   For single-scope: if no workspace.yaml, run openspec from current dir. If workspace.yaml exists, read it and determine which scope owns this change, then run openspec as \`(cd <scope.path> && openspec ...)\`.
+
+3. **Check status to understand the schema**
+   \`\`\`bash
+   (cd <workspace> && openspec status --change "<name>" --json)
    \`\`\`
    Parse the JSON to understand:
    - \`schemaName\`: The workflow being used (e.g., "spec-driven")
    - Which artifact contains the tasks (typically "tasks" for spec-driven, check status for others)
 
-3. **Get apply instructions**
+4. **Get apply instructions**
 
    \`\`\`bash
-   openspec instructions apply --change "<name>" --json
+   (cd <workspace> && openspec instructions apply --change "<name>" --json)
    \`\`\`
 
    This returns:
@@ -207,14 +245,14 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
    - If \`state: "all_done"\`: congratulate, suggest archive
    - Otherwise: proceed to implementation
 
-4. **Read context files**
+5. **Read context files**
 
    Read the files listed in \`contextFiles\` from the apply instructions output.
    The files depend on the schema being used:
    - **spec-driven**: proposal, specs, design, tasks
    - Other schemas: follow the contextFiles from CLI output
 
-5. **Show current progress**
+6. **Show current progress**
 
    Display:
    - Schema being used
@@ -222,7 +260,7 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
    - Remaining tasks overview
    - Dynamic instruction from CLI
 
-6. **Implement tasks (loop until done or blocked)**
+7. **Implement tasks (loop until done or blocked)**
 
    For each pending task:
    - Show which task is being worked on
@@ -237,13 +275,28 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
    - Error or blocker encountered → report and wait for guidance
    - User interrupts
 
-7. **On completion or pause, show status**
+8. **On completion or pause, show status**
 
    Display:
    - Tasks completed this session
    - Overall progress: "N/M tasks complete"
    - If all done: suggest archive
    - If paused: explain why and wait for guidance
+
+## Umbrella Apply Flow *(cross-scope changes only)*
+
+1. Read umbrella context:
+   \`\`\`bash
+   cat openspec/changes/<name>/proposal.md
+   cat openspec/changes/<name>/links.yaml
+   \`\`\`
+
+2. For each scope in links.yaml:
+   - Announce: "Applying <name> in scope: <scope.name>"
+   - Follow steps 3-8 of standard flow using that scope's path
+   - Complete all tasks for one scope before moving to next
+
+3. Show umbrella completion summary with per-scope progress.
 
 **Output During Implementation**
 
@@ -304,6 +357,7 @@ What would you like to do?
 - Keep code changes minimal and scoped to each task
 - Update task checkbox immediately after completing each task
 - Pause on errors, blockers, or unclear requirements - don't guess
+- For umbrella changes, complete one scope fully before starting the next
 - Use contextFiles from CLI output, don't assume specific file names
 
 **Fluid Workflow Integration**

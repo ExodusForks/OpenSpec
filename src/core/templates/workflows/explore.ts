@@ -82,15 +82,48 @@ You have full context of the OpenSpec system. Use it naturally, don't force it.
 
 ### Check for context
 
-At the start, quickly check what exists:
+At the start, check for a workspace manifest:
+\`\`\`bash
+cat openspec/workspace.yaml 2>/dev/null
+\`\`\`
+
+If it exists, this is a monorepo. List changes in each scope and check for umbrella changes:
+\`\`\`bash
+(cd <scope.path> && openspec list --json)   # for each scope in workspace.yaml
+ls openspec/changes/ 2>/dev/null             # umbrella changes
+\`\`\`
+
+If no workspace.yaml, this is a single-project setup:
 \`\`\`bash
 openspec list --json
 \`\`\`
 
 This tells you:
-- If there are active changes
-- Their names, schemas, and status
+- Which scopes have active changes (workspace mode)
+- Any active cross-scope umbrella changes
 - What the user might be working on
+
+### Multi-scope rule
+
+**When exploration touches more than one scope, prefer an umbrella change with linked per-scope proposals.**
+
+An umbrella change lives at \`openspec/changes/<name>/\` (at the monorepo root) and contains:
+- \`proposal.md\` — cross-cutting description
+- \`links.yaml\` — which per-scope changes it coordinates
+
+Each linked scope still gets its own independent change. The umbrella provides traceability, not coupling.
+
+Surface this early:
+\`\`\`
+This touches both <scope-a> and <scope-b>. I'd recommend an umbrella change:
+  openspec/changes/<name>/
+    proposal.md    ← cross-cutting description
+    links.yaml     ← links to per-scope changes
+
+Want to explore them together and propose as a linked set?
+\`\`\`
+
+Exception: change is entirely within one scope, or trivial cross-scope dependency.
 
 ### When no change exists
 
@@ -378,15 +411,48 @@ You have full context of the OpenSpec system. Use it naturally, don't force it.
 
 ### Check for context
 
-At the start, quickly check what exists:
+At the start, check for a workspace manifest:
+\`\`\`bash
+cat openspec/workspace.yaml 2>/dev/null
+\`\`\`
+
+If it exists, this is a monorepo. List changes in each scope and check for umbrella changes:
+\`\`\`bash
+(cd <scope.path> && openspec list --json)   # for each scope in workspace.yaml
+ls openspec/changes/ 2>/dev/null             # umbrella changes
+\`\`\`
+
+If no workspace.yaml, this is a single-project setup:
 \`\`\`bash
 openspec list --json
 \`\`\`
 
 This tells you:
-- If there are active changes
-- Their names, schemas, and status
+- Which scopes have active changes (workspace mode)
+- Any active cross-scope umbrella changes
 - What the user might be working on
+
+### Multi-scope rule
+
+**When exploration touches more than one scope, prefer an umbrella change with linked per-scope proposals.**
+
+An umbrella change lives at \`openspec/changes/<name>/\` (at the monorepo root) and contains:
+- \`proposal.md\` — cross-cutting description
+- \`links.yaml\` — which per-scope changes it coordinates
+
+Each linked scope still gets its own independent change. The umbrella provides traceability, not coupling.
+
+Surface this early:
+\`\`\`
+This touches both <scope-a> and <scope-b>. I'd recommend an umbrella change:
+  openspec/changes/<name>/
+    proposal.md    ← cross-cutting description
+    links.yaml     ← links to per-scope changes
+
+Want to explore them together and propose as a linked set?
+\`\`\`
+
+Exception: change is entirely within one scope, or trivial cross-scope dependency.
 
 If the user mentioned a specific change name, read its artifacts for context.
 
