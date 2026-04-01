@@ -18,7 +18,23 @@ export function getContinueChangeSkillTemplate(): SkillTemplate {
 
 1. **If no change name provided, prompt for selection**
 
-   Run \`openspec list --json\` to get available changes sorted by most recently modified. Then use the **AskUserQuestion tool** to let the user select which change to work on.
+   Check for a workspace manifest:
+   \`\`\`bash
+   cat openspec/workspace.yaml 2>/dev/null
+   \`\`\`
+
+   If workspace.yaml exists, list changes across all scopes:
+   \`\`\`bash
+   (cd <scope.path> && openspec list --json)   # for each scope in workspace.yaml
+   ls openspec/changes/ 2>/dev/null             # umbrella changes at root
+   \`\`\`
+
+   Otherwise:
+   \`\`\`bash
+   openspec list --json
+   \`\`\`
+
+   Aggregate all results sorted by most recently modified. Use the **AskUserQuestion tool** to let the user select which change to work on.
 
    Present the top 3-4 most recently modified changes as options, showing:
    - Change name
@@ -137,7 +153,23 @@ export function getOpsxContinueCommandTemplate(): CommandTemplate {
 
 1. **If no change name provided, prompt for selection**
 
-   Run \`openspec list --json\` to get available changes sorted by most recently modified. Then use the **AskUserQuestion tool** to let the user select which change to work on.
+   Check for a workspace manifest:
+   \`\`\`bash
+   cat openspec/workspace.yaml 2>/dev/null
+   \`\`\`
+
+   If workspace.yaml exists, list changes across all scopes:
+   \`\`\`bash
+   (cd <scope.path> && openspec list --json)   # for each scope in workspace.yaml
+   ls openspec/changes/ 2>/dev/null             # umbrella changes at root
+   \`\`\`
+
+   Otherwise:
+   \`\`\`bash
+   openspec list --json
+   \`\`\`
+
+   Aggregate all results sorted by most recently modified. Use the **AskUserQuestion tool** to let the user select which change to work on.
 
    Present the top 3-4 most recently modified changes as options, showing:
    - Change name

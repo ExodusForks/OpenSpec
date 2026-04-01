@@ -21,7 +21,7 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
    If a name is provided, use it. Otherwise:
    - Infer from conversation context if the user mentioned a change
    - Auto-select if only one active change exists
-   - If ambiguous, run \`openspec list --json\` to get available changes and use the **AskUserQuestion tool** to let the user select
+   - If ambiguous, check for a workspace manifest (\`cat openspec/workspace.yaml 2>/dev/null\`). If it exists, run \`(cd <scope.path> && openspec list --json)\` for each scope and \`ls openspec/changes/ 2>/dev/null\` for umbrella changes; otherwise run \`openspec list --json\`. Aggregate all results and use the **AskUserQuestion tool** to let the user select, showing which scope each change belongs to
 
    Always announce: "Using change: <name>" and how to override (e.g., \`/opsx:apply <other>\`).
 
@@ -205,7 +205,7 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
    If a name is provided, use it. Otherwise:
    - Infer from conversation context if the user mentioned a change
    - Auto-select if only one active change exists
-   - If ambiguous, run \`openspec list --json\` to get available changes and use the **AskUserQuestion tool** to let the user select
+   - If ambiguous, check for a workspace manifest (\`cat openspec/workspace.yaml 2>/dev/null\`). If it exists, run \`(cd <scope.path> && openspec list --json)\` for each scope and \`ls openspec/changes/ 2>/dev/null\` for umbrella changes; otherwise run \`openspec list --json\`. Aggregate all results and use the **AskUserQuestion tool** to let the user select, showing which scope each change belongs to
 
    Always announce: "Using change: <name>" and how to override (e.g., \`/opsx:apply <other>\`).
 
