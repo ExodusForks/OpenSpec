@@ -18,17 +18,12 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
 
 1. **Select the change**
 
-   First, check for a workspace manifest:
+   Get all active changes (workspace-aware):
    \`\`\`bash
-   cat openspec/workspace.yaml 2>/dev/null
+   openspec list --json
    \`\`\`
 
-   If workspace exists, aggregate all active changes:
-   - Run \`(cd <scope.path> && openspec list --json)\` for each scope in workspace.yaml
-   - Run \`ls openspec/changes/ 2>/dev/null\` for umbrella changes at root
-   - Track scope for each change: \`{ name, scope }\`
-
-   If no workspace, run \`openspec list --json\` and treat all results as scope \`null\`.
+   This returns all changes across all workspace scopes (each item has \`name\` and \`scope\` fields).
 
    Now select:
    - If a name is provided via argument: check if it matches exactly one \`{ name, scope }\` pair. If multiple scopes contain that name, use **AskUserQuestion tool** to ask which scope. If exactly one match, use it.
@@ -215,17 +210,12 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
 
 1. **Select the change**
 
-   First, check for a workspace manifest:
+   Get all active changes (workspace-aware):
    \`\`\`bash
-   cat openspec/workspace.yaml 2>/dev/null
+   openspec list --json
    \`\`\`
 
-   If workspace exists, aggregate all active changes:
-   - Run \`(cd <scope.path> && openspec list --json)\` for each scope in workspace.yaml
-   - Run \`ls openspec/changes/ 2>/dev/null\` for umbrella changes at root
-   - Track scope for each change: \`{ name, scope }\`
-
-   If no workspace, run \`openspec list --json\` and treat all results as scope \`null\`.
+   This returns all changes across all workspace scopes (each item has \`name\` and \`scope\` fields).
 
    Now select:
    - If a name is provided via argument: check if it matches exactly one \`{ name, scope }\` pair. If multiple scopes contain that name, use **AskUserQuestion tool** to ask which scope. If exactly one match, use it.

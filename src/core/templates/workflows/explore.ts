@@ -82,18 +82,7 @@ You have full context of the OpenSpec system. Use it naturally, don't force it.
 
 ### Check for context
 
-At the start, check for a workspace manifest:
-\`\`\`bash
-cat openspec/workspace.yaml 2>/dev/null
-\`\`\`
-
-If it exists, this is a monorepo. List changes in each scope and check for umbrella changes:
-\`\`\`bash
-(cd <scope.path> && openspec list --json)   # for each scope in workspace.yaml
-ls openspec/changes/ 2>/dev/null             # umbrella changes
-\`\`\`
-
-If no workspace.yaml, this is a single-project setup:
+At the start, list all active changes (workspace-aware):
 \`\`\`bash
 openspec list --json
 \`\`\`
@@ -411,18 +400,7 @@ You have full context of the OpenSpec system. Use it naturally, don't force it.
 
 ### Check for context
 
-At the start, check for a workspace manifest:
-\`\`\`bash
-cat openspec/workspace.yaml 2>/dev/null
-\`\`\`
-
-If it exists, this is a monorepo. List changes in each scope and check for umbrella changes:
-\`\`\`bash
-(cd <scope.path> && openspec list --json)   # for each scope in workspace.yaml
-ls openspec/changes/ 2>/dev/null             # umbrella changes
-\`\`\`
-
-If no workspace.yaml, this is a single-project setup:
+At the start, list all active changes (workspace-aware):
 \`\`\`bash
 openspec list --json
 \`\`\`
