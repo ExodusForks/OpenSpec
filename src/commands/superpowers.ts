@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { detectSuperpowers } from '../core/superpowers-detection.js';
 import { getGlobalConfig, saveGlobalConfig } from '../core/global-config.js';
+import { UpdateCommand } from '../core/update.js';
 
 export function registerSuperpowersCommand(program: Command): void {
   const superpowers = program
@@ -12,7 +13,7 @@ export function registerSuperpowersCommand(program: Command): void {
     .command('setup')
     .description('Detect and apply Superpowers enhancements to generated skills')
     .action(async () => {
-      const detection = detectSuperpowers();
+      const detection = detectSuperpowers(undefined, process.cwd());
 
       if (!detection.installed) {
         console.log(chalk.dim('Superpowers not found. Install it to enable enhanced skills.'));
@@ -21,14 +22,15 @@ export function registerSuperpowersCommand(program: Command): void {
       }
 
       console.log(chalk.green(`Superpowers detected: ${detection.installPath}`));
-      console.log(chalk.dim('Run: openspec update to regenerate skills with Superpowers enhancements.'));
+      console.log('Regenerating skills with Superpowers enhancements...');
+      await new UpdateCommand({ force: true }).execute(process.cwd());
     });
 
   superpowers
     .command('status')
     .description('Show Superpowers integration status')
     .action(() => {
-      const detection = detectSuperpowers();
+      const detection = detectSuperpowers(undefined, process.cwd());
       const config = getGlobalConfig();
       const optedOut = config.superpowers?.enabled === false;
 
