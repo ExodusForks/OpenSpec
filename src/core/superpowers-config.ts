@@ -12,8 +12,7 @@ const TDD_RULES_BLOCK = `
 ${MARKER}
 rules:
   tasks:
-    - description: "Write failing test before any production code (TDD red-green-refactor)"
-      enforce: always
+    - "Write failing test before any production code (TDD red-green-refactor)"
 `;
 
 export async function injectSuperpowersTddRules(projectPath: string): Promise<InjectionResult> {
