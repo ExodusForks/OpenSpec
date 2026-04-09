@@ -69,6 +69,19 @@ describe('injectSuperpowersTddRules', () => {
     expect(content).toBe(original);
   });
 
+  it('strips non-string tasks entries (old bad injection format) and adds TDD rule', async () => {
+    const configPath = join(projectDir, 'config.yaml');
+    await writeFile(configPath, 'rules:\n  tasks:\n    - description: old bad format\n      enforce: always\n');
+
+    const result = await injectSuperpowersTddRules(projectDir);
+
+    expect(result).toBe('injected');
+    const content = await readFile(configPath, 'utf8');
+    const parsed = parse(content) as Record<string, unknown>;
+    const tasks = (parsed.rules as Record<string, unknown>)?.tasks as string[];
+    expect(tasks).toEqual([TDD_RULE]);
+  });
+
   it('post-inject file parses as valid YAML', async () => {
     const configPath = join(projectDir, 'config.yaml');
     await writeFile(configPath, 'name: my-project\n');

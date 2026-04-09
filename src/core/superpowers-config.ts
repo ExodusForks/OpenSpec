@@ -26,13 +26,14 @@ export async function injectSuperpowersTddRules(projectPath: string): Promise<In
   }
 
   const rules = (config.rules ?? {}) as Record<string, unknown>;
-  const tasks = Array.isArray(rules.tasks) ? (rules.tasks as string[]) : [];
+  const rawTasks = Array.isArray(rules.tasks) ? rules.tasks : [];
+  const stringTasks = rawTasks.filter((t): t is string => typeof t === 'string');
 
-  if (tasks.includes(TDD_TASK_RULE)) {
+  if (stringTasks.includes(TDD_TASK_RULE)) {
     return 'already-present';
   }
 
-  config.rules = { ...rules, tasks: [...tasks, TDD_TASK_RULE] };
+  config.rules = { ...rules, tasks: [...stringTasks, TDD_TASK_RULE] };
 
   let injected: string;
   try {
