@@ -154,7 +154,7 @@ export class InitCommand {
     await this.handleWorkspaceDetection(projectPath, extendMode);
 
     // Detect Superpowers and build skill context
-    const spDetection = detectSuperpowers();
+    const spDetection = detectSuperpowers(undefined, projectPath);
     const globalConfigForSp = getGlobalConfig();
     const optOut = globalConfigForSp.superpowers?.enabled === false;
     const enhanceWithSuperpowers = shouldEnhanceWithSuperpowers(selectedToolIds, spDetection, optOut);

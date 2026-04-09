@@ -176,7 +176,7 @@ export class UpdateCommand {
     const cliTransformer = createCliTransformer(projectConfig?.cli);
 
     // Detect Superpowers and build skill context
-    const spDetection = detectSuperpowers();
+    const spDetection = detectSuperpowers(undefined, resolvedProjectPath);
     const optOut = globalConfig.superpowers?.enabled === false;
     const enhanceWithSuperpowers = shouldEnhanceWithSuperpowers(configuredTools, spDetection, optOut);
     const skillCtx: SkillContext = { superpowers: enhanceWithSuperpowers };

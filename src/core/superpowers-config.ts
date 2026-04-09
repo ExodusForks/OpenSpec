@@ -1,19 +1,12 @@
 import { readFile, writeFile, rename } from 'fs/promises';
 import { join } from 'path';
-import { parse } from 'yaml';
+import { parse, stringify } from 'yaml';
 import { tmpdir } from 'os';
 import { randomUUID } from 'crypto';
 
 export type InjectionResult = 'injected' | 'already-present' | 'no-config' | 'error';
 
-const MARKER = '# superpowers-tdd-rules';
-
-const TDD_RULES_BLOCK = `
-${MARKER}
-rules:
-  tasks:
-    - "Write failing test before any production code (TDD red-green-refactor)"
-`;
+const TDD_TASK_RULE = 'Write failing test before any production code (TDD red-green-refactor)';
 
 export async function injectSuperpowersTddRules(projectPath: string): Promise<InjectionResult> {
   const configPath = join(projectPath, 'config.yaml');
@@ -25,20 +18,25 @@ export async function injectSuperpowersTddRules(projectPath: string): Promise<In
     return 'no-config';
   }
 
-  if (existing.includes(MARKER)) {
-    return 'already-present';
-  }
-
+  let config: Record<string, unknown>;
   try {
-    parse(existing);
+    config = parse(existing) as Record<string, unknown>;
   } catch {
     return 'error';
   }
 
-  const injected = existing.endsWith('\n') ? existing + TDD_RULES_BLOCK : existing + '\n' + TDD_RULES_BLOCK;
+  const rules = (config.rules ?? {}) as Record<string, unknown>;
+  const tasks = Array.isArray(rules.tasks) ? (rules.tasks as string[]) : [];
 
+  if (tasks.includes(TDD_TASK_RULE)) {
+    return 'already-present';
+  }
+
+  config.rules = { ...rules, tasks: [...tasks, TDD_TASK_RULE] };
+
+  let injected: string;
   try {
-    parse(injected);
+    injected = stringify(config);
   } catch {
     return 'error';
   }

@@ -2,7 +2,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtemp, writeFile, readFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import { parse } from 'yaml';
 import { injectSuperpowersTddRules } from '../../src/core/superpowers-config.js';
+
+const TDD_RULE = 'Write failing test before any production code (TDD red-green-refactor)';
 
 describe('injectSuperpowersTddRules', () => {
   let projectDir: string;
@@ -20,7 +23,7 @@ describe('injectSuperpowersTddRules', () => {
     expect(result).toBe('no-config');
   });
 
-  it('injects TDD rules when marker is absent', async () => {
+  it('injects TDD rule into rules.tasks when absent', async () => {
     const configPath = join(projectDir, 'config.yaml');
     await writeFile(configPath, 'name: my-project\n');
 
@@ -28,33 +31,36 @@ describe('injectSuperpowersTddRules', () => {
 
     expect(result).toBe('injected');
     const content = await readFile(configPath, 'utf8');
-    expect(content).toContain('# superpowers-tdd-rules');
-    expect(content).toContain('name: my-project');
+    const parsed = parse(content) as Record<string, unknown>;
+    const tasks = (parsed.rules as Record<string, unknown>)?.tasks as string[];
+    expect(tasks).toContain(TDD_RULE);
   });
 
-  it('preserves all existing content character-for-character', async () => {
+  it('preserves existing rules.tasks entries', async () => {
     const configPath = join(projectDir, 'config.yaml');
-    const original = 'name: my-project\nversion: 1.0\ncustom: value\n';
-    await writeFile(configPath, original);
+    await writeFile(configPath, 'rules:\n  tasks:\n    - Existing rule\n');
 
     await injectSuperpowersTddRules(projectDir);
 
     const content = await readFile(configPath, 'utf8');
-    expect(content).toContain(original);
+    const parsed = parse(content) as Record<string, unknown>;
+    const tasks = (parsed.rules as Record<string, unknown>)?.tasks as string[];
+    expect(tasks).toContain('Existing rule');
+    expect(tasks).toContain(TDD_RULE);
   });
 
-  it('is idempotent: returns already-present if marker exists', async () => {
+  it('is idempotent: returns already-present if TDD rule exists', async () => {
     const configPath = join(projectDir, 'config.yaml');
-    await writeFile(configPath, 'name: test\n# superpowers-tdd-rules\nrules:\n  tasks:\n    - tdd\n');
+    await writeFile(configPath, `rules:\n  tasks:\n    - "${TDD_RULE}"\n`);
 
     const result = await injectSuperpowersTddRules(projectDir);
 
     expect(result).toBe('already-present');
   });
 
-  it('does not write when already-present', async () => {
+  it('does not modify file when already-present', async () => {
     const configPath = join(projectDir, 'config.yaml');
-    const original = 'name: test\n# superpowers-tdd-rules\nrules:\n  tasks:\n    - tdd\n';
+    const original = `rules:\n  tasks:\n    - "${TDD_RULE}"\n`;
     await writeFile(configPath, original);
 
     await injectSuperpowersTddRules(projectDir);
@@ -70,19 +76,19 @@ describe('injectSuperpowersTddRules', () => {
     await injectSuperpowersTddRules(projectDir);
 
     const content = await readFile(configPath, 'utf8');
-    const { parse } = await import('yaml');
     expect(() => parse(content)).not.toThrow();
   });
 
-  it('appends rules block when rules key is absent', async () => {
+  it('preserves existing non-rules config keys', async () => {
     const configPath = join(projectDir, 'config.yaml');
-    await writeFile(configPath, 'name: my-project\n');
+    await writeFile(configPath, 'schema: spec-driven\nname: test\n');
 
     await injectSuperpowersTddRules(projectDir);
 
     const content = await readFile(configPath, 'utf8');
-    expect(content).toContain('rules:');
-    expect(content).toContain('tasks:');
+    const parsed = parse(content) as Record<string, unknown>;
+    expect(parsed.schema).toBe('spec-driven');
+    expect(parsed.name).toBe('test');
   });
 
   it('returns error and does not write for malformed YAML', async () => {
